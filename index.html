@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operating System — Bee Haven / LCFG</title>
+<style>
+  :root{
+    color-scheme: light;
+    --charcoal:#2f2f31; --brown:#5B483D; --sage-dark:#526360; --slate:#546461;
+    --sage-mid:#738985; --sage-light:#A1B0AD; --linen:#DCD1C7; --warm-taupe:#B39C8F;
+    --cream:#ebe6dc; --light-cream:#F0ECE8; --offwhite:#f5f3ee; --nearwhite:#faf9f6;
+    --green:#5e7d63; --accent:#b06a4f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+    background:var(--cream);color:var(--charcoal);line-height:1.5;padding:40px 20px 60px;}
+  .wrap{max-width:940px;margin:0 auto;}
+  header{text-align:center;margin-bottom:6px;}
+  h1{font-size:30px;font-weight:600;color:var(--sage-dark);}
+  h1 em{font-style:italic;color:var(--accent);}
+  .sub{font-size:14px;color:var(--slate);margin-top:6px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:26px;}
+  a.card{display:block;background:var(--nearwhite);border:1px solid var(--linen);border-radius:14px;padding:18px 20px;
+    text-decoration:none;color:inherit;border-top:5px solid var(--sage-mid);transition:transform .12s,box-shadow .12s;}
+  a.card:hover{transform:translateY(-3px);box-shadow:0 6px 18px rgba(82,99,96,.15);}
+  .num{font-size:12px;font-weight:700;color:var(--sage-light);letter-spacing:1px;}
+  .ct{font-size:19px;font-weight:600;color:var(--sage-dark);margin:3px 0 1px;}
+  .sh{font-size:13px;font-style:italic;color:var(--accent);margin-bottom:7px;}
+  .cd{font-size:12.5px;color:var(--slate);}
+  .loop{background:var(--nearwhite);border:1px solid var(--linen);border-left:5px solid var(--accent);border-radius:10px;
+    padding:13px 17px;margin-top:20px;font-size:13.5px;color:var(--slate);}
+  .loop b{color:var(--sage-dark);}
+  .cad-title{font-size:12.5px;font-weight:700;color:var(--sage-dark);text-transform:uppercase;letter-spacing:.6px;margin:26px 0 10px;text-align:center;}
+  .cadence{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+  .cad{background:var(--nearwhite);border:1px solid var(--linen);border-radius:12px;padding:15px 16px;border-top:4px solid var(--sage-light);}
+  .cad .cw{font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;}
+  .cad .cn{font-size:16px;font-weight:600;color:var(--sage-dark);margin:3px 0 4px;}
+  .cad .cds{font-size:12.5px;color:var(--slate);}
+  .cad .cwhen{font-size:11px;color:var(--sage-mid);margin-top:6px;}
+  .run{background:var(--sage-dark);color:var(--nearwhite);border-radius:14px;padding:18px 22px;margin-top:24px;}
+  .run h2{font-size:16px;font-weight:600;margin-bottom:6px;}
+  .run p{font-size:13.5px;opacity:.92;line-height:1.65;}
+  .run b{color:var(--cream);}
+  .foot{text-align:center;font-size:12px;color:var(--sage-mid);margin-top:24px;line-height:1.7;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Six systems. <em>One loop.</em></h1>
+    <div class="sub">Your life, your direction, your time, your team, your numbers, your constraint — built once, run on a rhythm.</div>
+  </header>
+
+  <div class="grid">
+    <a class="card" href="seed-of-life.html">
+      <div class="num">01</div><div class="ct">Seed of Life</div><div class="sh">your state</div>
+      <div class="cd">Seven areas scored, with momentum arrows — catch a slide before it's a slump.</div>
+    </a>
+    <a class="card" href="vision.html">
+      <div class="num">02</div><div class="ct">Vision</div><div class="sh">the destination</div>
+      <div class="cd">North Star down to this quarter — the $300K goal pulls live pace.</div>
+    </a>
+    <a class="card" href="golden-section.html">
+      <div class="num">03</div><div class="ct">Golden Section</div><div class="sh">frees your time</div>
+      <div class="cd">Where your hours go, flipped from drain to gold — the hours to win back.</div>
+    </a>
+    <a class="card" href="org-chart.html">
+      <div class="num">04</div><div class="ct">Org Chart</div><div class="sh">who owns what</div>
+      <div class="cd">Every seat in both businesses — and how many are still you.</div>
+    </a>
+    <a class="card" href="scoreboard.html">

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vision — LCFG + BFF</title>
+<style>
+  :root{
+    color-scheme: light;
+    --charcoal:#2f2f31; --brown:#5B483D; --sage-dark:#526360; --slate:#546461;
+    --sage-mid:#738985; --sage-light:#A1B0AD; --linen:#DCD1C7; --warm-taupe:#B39C8F;
+    --cream:#ebe6dc; --light-cream:#F0ECE8; --offwhite:#f5f3ee; --nearwhite:#faf9f6;
+    --green:#5e7d63; --green-bg:#e6ede6; --amber:#b08a3e; --amber-bg:#f2ebda; --red:#9c5a4d; --red-bg:#f0e3df;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+    background:var(--cream);color:var(--charcoal);line-height:1.55;padding:24px 18px 50px;}
+  .wrap{max-width:920px;margin:0 auto;}
+  header{border-bottom:2px solid var(--sage-dark);padding-bottom:14px;margin-bottom:6px;}
+  h1{font-size:24px;font-weight:600;color:var(--sage-dark);}
+  .sub{font-size:13px;color:var(--slate);margin-top:3px;}
+  .northstar{background:var(--sage-dark);color:var(--nearwhite);border-radius:12px;padding:15px 18px;margin:16px 0 6px;}
+  .northstar .nl{font-size:11px;text-transform:uppercase;letter-spacing:1px;opacity:.8;}
+  .northstar .nt{font-size:16px;font-weight:600;margin-top:4px;font-style:italic;}
+  .section-title{font-size:12.5px;font-weight:700;color:var(--sage-dark);text-transform:uppercase;letter-spacing:.6px;margin:26px 0 4px;}
+  .hint{font-size:11.5px;color:var(--sage-mid);font-weight:400;text-transform:none;letter-spacing:0;margin-left:8px;}
+  .panel{background:var(--nearwhite);border:1px solid var(--linen);border-radius:12px;padding:15px 17px;margin-top:8px;}
+  [contenteditable]{outline:none;border-radius:6px;transition:background .15s;}
+  [contenteditable]:hover{background:var(--light-cream);}
+  [contenteditable]:focus{background:var(--light-cream);box-shadow:0 0 0 2px var(--sage-light);}
+  .draft{display:inline-block;font-size:10px;font-weight:700;color:var(--amber);background:var(--amber-bg);border-radius:20px;padding:2px 9px;text-transform:uppercase;letter-spacing:.4px;margin-left:8px;vertical-align:middle;}
+  .ladder{display:grid;grid-template-columns:90px 1fr;gap:0;}
+  .ladder .yr{font-size:13px;font-weight:700;color:var(--sage-mid);padding:14px 0;border-right:2px solid var(--linen);}
+  .ladder .ct{padding:14px 0 14px 16px;font-size:14px;}
+  .ladder .row{display:contents;}
+  .goal{background:var(--nearwhite);border:1px solid var(--linen);border-radius:12px;padding:14px 16px;margin-top:10px;border-left:5px solid var(--sage-light);}
+  .goal.g{border-left-color:var(--green);} .goal.a{border-left-color:var(--amber);} .goal.r{border-left-color:var(--red);}
+  .goal .gh{display:flex;justify-content:space-between;align-items:baseline;}
+  .goal .gn{font-size:14.5px;font-weight:600;}
+  .goal .gv{font-size:14px;color:var(--slate);}
+  .goal .gv b{color:var(--charcoal);font-size:17px;}
+  .bar{height:8px;background:var(--light-cream);border-radius:5px;margin-top:9px;overflow:hidden;}
+  .bar span{display:block;height:100%;border-radius:5px;}
+  .pace{font-size:12px;margin-top:6px;}
+  .alloc{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:12px;}
+  .alloc div{background:var(--offwhite);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--slate);}
+  .alloc div b{display:block;color:var(--charcoal);font-size:14px;font-weight:600;margin-top:2px;}
+  .proj{display:flex;justify-content:space-between;align-items:center;background:var(--nearwhite);border:1px solid var(--linen);
+    border-radius:11px;padding:12px 15px;margin-top:9px;border-left:5px solid var(--sage-mid);}
+  .proj .pn{font-size:14px;font-weight:600;}
+  .proj .pd{font-size:12px;color:var(--sage-mid);margin-top:2px;}
+  .pill{font-size:11px;font-weight:700;padding:5px 12px;border-radius:20px;cursor:pointer;border:none;font-family:inherit;white-space:nowrap;}
+  .pill.on{background:var(--green-bg);color:var(--green);} .pill.prog{background:var(--amber-bg);color:var(--amber);} .pill.off{background:var(--light-cream);color:var(--slate);}
+  .stamp{font-size:12px;color:var(--sage-mid);margin-top:18px;}
+  .note{font-size:11.5px;color:var(--sage-mid);margin-top:6px;line-height:1.6;}
+</style>
+  <script src="sfb-config.js"></script>
+  <script src="sfb-sync.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Vision</h1>
+    <div class="sub">The Polaris cascade — long view down to this quarter. Everything below ladders up to the line above it. Click any text to edit; it saves itself.</div>
+  </header>
+
+  <div class="northstar">
+    <div class="nl">North Star — the operating directive</div>
+    <div class="nt" contenteditable data-k="northstar">"I will build the best cut flower program out there. Price isn't the point — getting there and becoming more profitable is."</div>
+  </div>
+
+  <div class="section-title">Personal Polaris Star <span class="hint">your life vision — the fixed point everything steers by</span></div>
+  <div class="panel"><span class="draft">draft — your call</span>
+    <div contenteditable data-k="polaris" style="margin-top:8px">A life lived wide, not just long — raising my children at home while building real income from the land. Freedom over my time, work that has dignity and meaning, and a legacy that outlasts me: the lost art of growing handed back to families and neighborhoods. The courage to live wide.</div>
+  </div>
+
+  <div class="section-title">10-Year Master Plan <span class="hint">the business north star · founder-owned</span></div>
+  <div class="panel"><span class="draft">draft — your call</span>
+    <div contenteditable data-k="tenyear" style="margin-top:8px">The garden florist becomes the premium — communities turn to local growers first. LCFG is the definitive program that makes that real, the place anyone serious about growing and selling cut flowers comes to learn. Proof, not theory; the teaching comes from the dirt.</div>
+  </div>
+
+  <div class="section-title">3-Year Mission <span class="hint">2028</span></div>
+  <div class="panel"><span class="draft">draft — your call</span>
+    <div contenteditable data-k="threeyear" style="margin-top:8px">LCFG recognized as the best cut flower program available, running on consistent systems instead of hustle — with the 10× Garden-Florist Business Program ($4,970) launched as the ascension for graduates ready to build a real floral business.</div>
+  </div>
+
+  <div class="section-title">12-Month Goals <span class="hint">2026 — are we on pace?</span></div>
+  <div id="goals"><div class="note">Loading live revenue…</div></div>
+
+  <div class="alloc" id="alloc"></div>
+
+  <div class="section-title">This Quarter's Projects <span class="hint">Q3 2026 — what actually moves the mission</span></div>
+  <div id="projects"></div>
+
+  <div class="stamp" id="stamp"></div>
+  <div class="note">Mission (LCFG): inspire and instruct others on how to successfully grow, market, and sell cut flowers from home. Revenue goal pulls live; everything else is yours to edit. Draft tags mark the pieces I drafted from your brand + worldview files — confirm or rewrite them.</div>
+</div>
+
+<script>
+const REV='mcp__f14f9873-b5b5-4695-b34f-49a7599545f0__Revenue-summary';
+const KEY='lcfg_vision_state';
+const LCFG_GOAL=300000, BFF_GOAL=100000;
+
+let store=JSON.parse(localStorage.getItem(KEY)||'{}');
+function saveStore(){localStorage.setItem(KEY,JSON.stringify(store));}
+
+document.querySelectorAll('[contenteditable]').forEach(el=>{
+  const k=el.dataset.k; if(store[k])el.textContent=store[k];
+  el.addEventListener('blur',()=>{store[k]=el.textContent.trim();saveStore();});
+});
+
+const money=v=>'$'+Math.round(v).toLocaleString();
+
+const PROJECTS=[
+  {k:'webinar',n:'Webinar rework',d:'Reposition the weekly live webinar to convert into LCFG $497'},
+  {k:'garden',n:'Garden Planner App',d:'Flagship in-app tool — plan the garden, quantities, expected profit'},
+  {k:'email',n:'Email + podcast revenue engine',d:'Consistent sending + podcast relaunch as the lead drivers'}
+];
+const STATUS=['off','prog','on']; const SLABEL={off:'Not started',prog:'In progress',on:'On track'};
+function renderProjects(){
+  const c=document.getElementById('projects'); c.innerHTML='';
+  PROJECTS.forEach(p=>{
+    const st=store['proj_'+p.k]||'prog';
+    const d=document.createElement('div'); d.className='proj';
+    d.innerHTML=`<div><div class="pn">${p.n}</div><div class="pd">${p.d}</div></div>
+      <button class="pill ${st}" data-k="${p.k}">${SLABEL[st]}</button>`;
+    c.appendChild(d);
+  });
+  c.querySelectorAll('.pill').forEach(b=>b.onclick=()=>{
+    const k='proj_'+b.dataset.k; const cur=store[k]||'prog';
+    store[k]=STATUS[(STATUS.indexOf(cur)+1)%3]; saveStore(); renderProjects();
+  });
+}
+
+function allocBoxes(){
+  const a=[['LCFG $497 Course',150000],['LCFG Skool',60000],['BFF Skool',30000],['SLO Webinar $27',15000],['1:1 Coaching',30000],['Other',15000]];
+  document.getElementById('alloc').innerHTML=a.map(([n,v])=>`<div>${n}<b>${money(v)}</b></div>`).join('');
+}
+
+async function callTool(name,args){
+  const r=await window.cowork.callMcpTool(name,args||{});
+  if(r&&r.isError) throw new Error('err');
+  let d=r&&r.structuredContent;
+  if(d==null&&r&&r.content&&r.content[0]&&r.content[0].text)d=JSON.parse(r.content[0].text);
+  return d;
+}
+
+function goalCard(name,actual,goal,paceFrac){
+  const frac=actual/goal; const expPct=paceFrac;
+  const onPace=actual>=goal*paceFrac*0.95;
+  const cls=onPace?'g':(actual>=goal*paceFrac*0.7?'a':'r');
+  const paceTxt=onPace?'On pace':(actual>=goal*paceFrac*0.7?'A bit behind pace':'Behind pace');
+  const paceCol=onPace?'var(--green)':(actual>=goal*paceFrac*0.7?'var(--amber)':'var(--red)');
+  return `<div class="goal ${cls}">
+    <div class="gh"><span class="gn">${name}</span><span class="gv"><b>${money(actual)}</b> / ${money(goal)}</span></div>
+    <div class="bar"><span style="width:${Math.min(100,frac*100)}%;background:${paceCol}"></span></div>
+    <div class="pace" style="color:${paceCol}">${paceTxt} · ${Math.round(frac*100)}% of year goal · expected ~${Math.round(expPct*100)}% by today</div>
+  </div>`;
+}
+
+(async function init(){
+  renderProjects(); allocBoxes();
+  const now=new Date();
+  const start=new Date(now.getFullYear(),0,1);
+  const paceFrac=(now-start)/(new Date(now.getFullYear(),11,31,23,59)-start);
+  let ytd=0, ok=false;
+  try{
+    const d=await callTool(REV,{start_date:now.getFullYear()+'-01-01',end_date:now.toISOString().slice(0,10),group_by:'month'});
+    const rows=d.result||d||[];
+    ytd=rows.reduce((s,r)=>s+(r.total_revenue||0),0); ok=true;
+  }catch(e){}
+  let html='';
+  if(ok){ html+=goalCard('LCFG online revenue (live)',ytd,LCFG_GOAL,paceFrac); }
+  else { html+=`<div class="goal a"><div class="gh"><span class="gn">LCFG online revenue</span><span class="gv">/ ${money(LCFG_GOAL)}</span></div><div class="pace" style="color:var(--amber)">Couldn't reach the revenue connector — hit Reload.</div></div>`; }
+  html+=`<div class="goal"><div class="gh"><span class="gn">LCFG profit margin</span><span class="gv"><b>50%</b> target</span></div></div>`;
+  html+=`<div class="goal"><div class="gh"><span class="gn">BFF gross revenue</span><span class="gv"><b>${money(BFF_GOAL)}</b> target · 35% margin</span></div><div class="note" style="margin-top:6px">Farm stand $3K/mo · weddings · U-Pick · peony cash crop</div></div>`;
+  document.getElementById('goals').innerHTML=html;
+  if(ok)document.getElementById('stamp').textContent='Revenue live as of '+now.toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'})+' · Reload to refresh.';
+})();
+</script>
+</body>
+</html>

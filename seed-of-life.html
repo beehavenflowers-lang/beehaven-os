@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Seed of Life — Paula</title>
+<style>
+  :root{
+    color-scheme: light;
+    --charcoal:#2f2f31; --brown:#5B483D; --sage-dark:#526360; --slate:#546461;
+    --sage-mid:#738985; --sage-light:#A1B0AD; --linen:#DCD1C7; --warm-taupe:#B39C8F;
+    --cream:#ebe6dc; --light-cream:#F0ECE8; --offwhite:#f5f3ee; --nearwhite:#faf9f6;
+    --green:#5e7d63; --green-bg:#e6ede6; --amber:#b08a3e; --amber-bg:#f2ebda; --red:#9c5a4d; --red-bg:#f0e3df;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+    background:var(--cream);color:var(--charcoal);line-height:1.5;padding:24px 18px 50px;}
+  .wrap{max-width:920px;margin:0 auto;}
+  header{border-bottom:2px solid var(--sage-dark);padding-bottom:14px;margin-bottom:18px;}
+  h1{font-size:24px;font-weight:600;color:var(--sage-dark);}
+  .sub{font-size:13px;color:var(--slate);margin-top:3px;}
+  .top{display:grid;grid-template-columns:300px 1fr;gap:22px;align-items:start;}
+  @media(max-width:680px){.top{grid-template-columns:1fr;}}
+  .radarbox{background:var(--nearwhite);border:1px solid var(--linen);border-radius:14px;padding:14px;text-align:center;}
+  .avg{font-size:13px;color:var(--slate);margin-top:6px;}
+  .avg b{font-size:22px;color:var(--sage-dark);font-weight:600;}
+  .dims{display:flex;flex-direction:column;gap:10px;}
+  .dim{background:var(--nearwhite);border:1px solid var(--linen);border-radius:11px;padding:11px 14px;border-left:5px solid var(--sage-light);}
+  .dim.r{border-left-color:var(--red);} .dim.a{border-left-color:var(--amber);}
+  .dim.m{border-left-color:var(--sage-mid);} .dim.g{border-left-color:var(--green);}
+  .dim .dh{display:flex;justify-content:space-between;align-items:center;}
+  .dim .dn{font-size:14.5px;font-weight:600;color:var(--charcoal);}
+  .dim .dn .flag{color:var(--red);font-size:12px;margin-left:6px;}
+  .dim .dv{font-size:20px;font-weight:600;min-width:28px;text-align:right;}
+  .dim .ctrls{display:flex;align-items:center;gap:12px;margin-top:8px;}
+  .dim input[type=range]{flex:1;accent-color:var(--sage-mid);}
+  .mom{display:flex;gap:4px;}
+  .mom button{font-family:inherit;font-size:14px;line-height:1;width:30px;height:28px;border-radius:6px;cursor:pointer;
+    border:1px solid var(--linen);background:var(--offwhite);color:var(--sage-mid);}
+  .mom button.on{background:var(--sage-dark);color:var(--nearwhite);border-color:var(--sage-dark);}
+  .alert{background:var(--red-bg);border:1px solid var(--red);border-radius:12px;padding:14px 16px;margin:20px 0 0;}
+  .alert .ah{font-size:14px;font-weight:600;color:var(--red);margin-bottom:5px;}
+  .alert .ab{font-size:13px;color:var(--brown);line-height:1.6;}
+  .alert .aq{font-size:13px;color:var(--charcoal);font-weight:600;margin-top:8px;}
+  .flags{margin-top:16px;}
+  .flagrow{font-size:13px;color:var(--brown);background:var(--amber-bg);border-radius:7px;padding:7px 11px;margin-bottom:6px;}
+  .section-title{font-size:12.5px;font-weight:700;color:var(--sage-dark);text-transform:uppercase;letter-spacing:.6px;margin:24px 0 10px;}
+  .hist{font-size:13px;}
+  .histrow{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--light-cream);color:var(--slate);}
+  .actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;}
+  button.act{font-family:inherit;font-size:13px;font-weight:600;padding:9px 16px;border-radius:8px;cursor:pointer;border:1px solid var(--sage-dark);}
+  .btn-primary{background:var(--sage-dark);color:var(--nearwhite);}
+  .btn-ghost{background:transparent;color:var(--sage-dark);}
+  .saved{font-size:12px;color:var(--green);font-weight:600;align-self:center;}
+  .note{font-size:11.5px;color:var(--sage-mid);margin-top:12px;line-height:1.6;}
+</style>
+  <script src="sfb-config.js"></script>
+  <script src="sfb-sync.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Seed of Life</h1>
+    <div class="sub">You are the system. Before any number in the business, check the person. Score 0–10, set a momentum arrow, save a check-in.</div>
+  </header>
+
+  <div class="top">
+    <div class="radarbox">
+      <svg id="radar" viewBox="0 0 320 320" width="100%" style="max-width:300px" role="img" aria-label="Seed of Life radar of seven life areas"></svg>
+      <div class="avg">Whole-life average: <b id="avgv">—</b> / 10</div>
+    </div>
+    <div class="dims" id="dims"></div>
+  </div>
+
+  <div id="alertBox"></div>
+  <div class="flags" id="flags"></div>
+
+  <div class="actions">
+    <button class="act btn-primary" id="saveBtn">Save check-in</button>
+    <span class="saved" id="savedMsg"></span>
+  </div>
+
+  <div class="section-title">Check-in history</div>
+  <div class="hist" id="hist"></div>
+
+  <div class="note">Momentum arrows: ↑ moving forward · → holding steady · ↓ sliding back. The point isn't a perfect score — it's catching a slide early, while it's still cheap to fix.</div>
+</div>
+
+<script>
+const AREAS=[
+  {k:'health',n:'Health'},{k:'social',n:'Social'},{k:'family',n:'Family'},
+  {k:'finance',n:'Finance'},{k:'career',n:'Career'},{k:'intellect',n:'Intellect'},{k:'intimacy',n:'Intimacy'}
+];
+const SEED={health:5,social:2,family:2,finance:3,career:3,intellect:7,intimacy:0};
+const KEY='lcfg_seed_of_life';
+
+function today(){return new Date().toISOString().slice(0,10);}
+function load(){try{const r=localStorage.getItem(KEY);if(r)return JSON.parse(r);}catch(e){}
+  return {history:[{date:today(),scores:{...SEED},momentum:{}}]};}
+let state=load();
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function current(){return state.history[state.history.length-1];}
+function prev(){return state.history.length>1?state.history[state.history.length-2]:null;}
+function avg(s){const v=AREAS.map(a=>s[a.k]).filter(x=>x!=null);return v.length?v.reduce((a,b)=>a+b,0)/v.length:0;}
+function cls(v){return v<3?'r':v<5?'a':v<7?'m':'g';}
+function colorFor(v){return v<3?'#9c5a4d':v<5?'#b08a3e':v<7?'#738985':'#5e7d63';}
+
+function drawRadar(scores){
+  const CX=160,CY=160,R=120,n=AREAS.length,step=2*Math.PI/n,start=-Math.PI/2;
+  const pt=(i,r)=>[CX+r*Math.cos(start+i*step),CY+r*Math.sin(start+i*step)];
+  let s='';
+  for(let ring=2;ring<=10;ring+=2){
+    let pts=AREAS.map((_,i)=>pt(i,R*ring/10).join(',')).join(' ');
+    s+=`<polygon points="${pts}" fill="none" stroke="#DCD1C7" stroke-width="1"/>`;
+  }
+  AREAS.forEach((_,i)=>{const[x,y]=pt(i,R);s+=`<line x1="${CX}" y1="${CY}" x2="${x}" y2="${y}" stroke="#DCD1C7" stroke-width="1"/>`;});
+  let dpts=AREAS.map((a,i)=>pt(i,R*(scores[a.k]??0)/10).join(',')).join(' ');
+  s+=`<polygon points="${dpts}" fill="rgba(115,137,133,0.35)" stroke="#526360" stroke-width="2"/>`;
+  AREAS.forEach((a,i)=>{const v=scores[a.k]??0;const[x,y]=pt(i,R*v/10);s+=`<circle cx="${x}" cy="${y}" r="3.5" fill="${colorFor(v)}"/>`;});
+  AREAS.forEach((a,i)=>{const[x,y]=pt(i,R+20);
+    const anchor=Math.abs(x-CX)<10?'middle':(x>CX?'start':'end');
+    s+=`<text x="${x}" y="${y}" font-size="11" font-weight="600" fill="#546461" text-anchor="${anchor}" dominant-baseline="middle">${a.n}</text>`;});
+  document.getElementById('radar').innerHTML=s;
+}
+
+function render(){
+  const cur=current(); const pv=prev();
+  drawRadar(cur.scores);
+  document.getElementById('avgv').textContent=avg(cur.scores).toFixed(1);
+  const dims=document.getElementById('dims'); dims.innerHTML='';
+  AREAS.forEach(a=>{
+    const v=cur.scores[a.k]??5; const c=cls(v);
+    const m=cur.momentum&&cur.momentum[a.k];
+    const flag=v<5?'<span class="flag">⚑ needs attention</span>':'';
+    const div=document.createElement('div');
+    div.className='dim '+c;
+    div.innerHTML=`
+      <div class="dh"><span class="dn">${a.n}${flag}</span><span class="dv" style="color:${colorFor(v)}">${v}</span></div>
+      <div class="ctrls">
+        <input type="range" min="0" max="10" step="1" value="${v}" data-k="${a.k}">
+        <div class="mom" data-k="${a.k}">
+          <button data-v="up" class="${m==='up'?'on':''}" title="Moving forward">↑</button>
+          <button data-v="same" class="${m==='same'?'on':''}" title="Holding steady">→</button>
+          <button data-v="down" class="${m==='down'?'on':''}" title="Sliding back">↓</button>
+        </div>
+      </div>`;
+    dims.appendChild(div);
+  });
+  document.querySelectorAll('.dim input').forEach(inp=>inp.addEventListener('input',()=>{
+    cur.scores[inp.dataset.k]=Number(inp.value); save(); render();
+  }));
+  document.querySelectorAll('.mom').forEach(g=>g.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    cur.momentum=cur.momentum||{}; const k=g.dataset.k,v=b.dataset.v;
+    cur.momentum[k]=cur.momentum[k]===v?undefined:v; save(); render();
+  }));
+
+  // flags
+  let flagsHtml=''; let lowCount=0;
+  AREAS.forEach(a=>{const v=cur.scores[a.k]??5; if(v<5){lowCount++; flagsHtml+=`<div class="flagrow">${a.n} at ${v} — worth attention</div>`;}});
+  if(pv)AREAS.forEach(a=>{const v=cur.scores[a.k]??5,p=pv.scores[a.k]; if(p!=null&&p-v>=2)flagsHtml+=`<div class="flagrow">${a.n} dropped ${p-v} since last check-in (${p}→${v})</div>`;});
+  document.getElementById('flags').innerHTML=flagsHtml;
+
+  // supportive alert when several areas are low
+  const ab=document.getElementById('alertBox');
+  if(lowCount>=4){
+    ab.innerHTML=`<div class="alert">
+      <div class="ah">${lowCount} areas are sitting low right now</div>
+      <div class="ab">When this many areas dip at once, everything feels heavier — and it's usually the person, not the business, that needs the first move. Don't try to lift them all. Pick the <b>one</b> that shifts fastest: Health, Social, and Family can move in days; Finance, Career, and Intellect take longer, so they're rarely the right first step.</div>
+      <div class="aq">What's the one small thing you could do this week that you'd actually feel?</div>
+    </div>`;
+  } else ab.innerHTML='';
+
+  // history
+  const h=document.getElementById('hist');
+  h.innerHTML=state.history.slice().reverse().map(e=>{
+    const d=new Date(e.date+'T00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    return `<div class="histrow"><span>${d}</span><span>avg ${avg(e.scores).toFixed(1)} / 10</span></div>`;
+  }).join('');
+}
+
+document.getElementById('saveBtn').addEventListener('click',()=>{
+  const cur=current();
+  if(cur.date!==today()){
+    state.history.push({date:today(),scores:{...cur.scores},momentum:{}});
+  }
+  save(); render();
+  const m=document.getElementById('savedMsg'); m.textContent='Check-in saved ✓';
+  setTimeout(()=>m.textContent='',1800);
+});
+
+render();
+</script>
+</body>
+</html>

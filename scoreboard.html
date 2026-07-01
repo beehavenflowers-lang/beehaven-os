@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LCFG Scoreboard</title>
+<style>
+  :root{
+    --charcoal:#2f2f31; --brown:#5B483D; --sage-dark:#526360; --slate:#546461;
+    --sage-mid:#738985; --sage-light:#A1B0AD; --linen:#DCD1C7; --warm-taupe:#B39C8F;
+    --cream:#ebe6dc; --light-cream:#F0ECE8; --offwhite:#f5f3ee; --nearwhite:#faf9f6;
+    --green:#5e7d63; --green-bg:#e6ede6; --amber:#b08a3e; --amber-bg:#f2ebda; --red:#9c5a4d; --red-bg:#f0e3df;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+    background:var(--cream);color:var(--charcoal);line-height:1.5;padding:28px 20px 60px;}
+  .wrap{max-width:1080px;margin:0 auto;}
+  header{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:14px;
+    border-bottom:2px solid var(--sage-dark);padding-bottom:16px;margin-bottom:8px;}
+  h1{font-size:26px;font-weight:600;color:var(--sage-dark);letter-spacing:.2px;}
+  .sub{font-size:13px;color:var(--slate);margin-top:3px;}
+  .weekbar{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--slate);}
+  .weekbar input{font-family:inherit;font-size:13px;border:1px solid var(--linen);border-radius:6px;
+    padding:5px 8px;background:var(--nearwhite);color:var(--charcoal);}
+  .legend{display:flex;gap:16px;font-size:12px;color:var(--slate);margin:14px 0 18px;flex-wrap:wrap;}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(238px,1fr));gap:14px;}
+  .card{background:var(--nearwhite);border:1px solid var(--linen);border-radius:14px;padding:16px 16px 14px;
+    border-left:5px solid var(--sage-light);position:relative;}
+  .card.g{border-left-color:var(--green);} .card.a{border-left-color:var(--amber);} .card.r{border-left-color:var(--red);}
+  .label{font-size:12.5px;font-weight:600;color:var(--slate);text-transform:uppercase;letter-spacing:.4px;
+    display:flex;justify-content:space-between;align-items:center;}
+  .pill{font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.3px;}
+  .pill.g{background:var(--green-bg);color:var(--green);} .pill.a{background:var(--amber-bg);color:var(--amber);}
+  .pill.r{background:var(--red-bg);color:var(--red);} .pill.n{background:var(--light-cream);color:var(--sage-mid);}
+  .value{font-size:30px;font-weight:600;color:var(--charcoal);margin:8px 0 2px;display:flex;align-items:baseline;gap:8px;}
+  .value input{font-family:inherit;font-size:26px;font-weight:600;width:108px;border:none;border-bottom:2px solid var(--linen);
+    background:transparent;color:var(--charcoal);padding:2px 0;}
+  .value input:focus{outline:none;border-bottom-color:var(--sage-mid);}
+  .unit{font-size:15px;color:var(--sage-mid);font-weight:500;}
+  .target{font-size:12px;color:var(--sage-mid);margin-top:2px;}
+  .target b{color:var(--slate);font-weight:600;}
+  .bar{height:6px;background:var(--light-cream);border-radius:4px;margin-top:11px;overflow:hidden;}
+  .bar span{display:block;height:100%;border-radius:4px;background:var(--sage-mid);}
+  .bar span.g{background:var(--green);} .bar span.a{background:var(--amber);} .bar span.r{background:var(--red);}
+  .spark{margin-top:10px;height:30px;width:100%;}
+  .section-title{font-size:13px;font-weight:700;color:var(--sage-dark);text-transform:uppercase;letter-spacing:.6px;
+    margin:26px 0 4px;}
+  .actions{display:flex;gap:10px;margin-top:24px;flex-wrap:wrap;}
+  button{font-family:inherit;font-size:13px;font-weight:600;padding:9px 18px;border-radius:8px;cursor:pointer;border:1px solid var(--sage-dark);}
+  .btn-primary{background:var(--sage-dark);color:var(--nearwhite);}
+  .btn-ghost{background:transparent;color:var(--sage-dark);}
+  .note{font-size:12px;color:var(--sage-mid);margin-top:16px;line-height:1.6;}
+  .saved{font-size:12px;color:var(--green);font-weight:600;opacity:0;transition:opacity .3s;}
+  .saved.show{opacity:1;}
+</style>
+  <script src="sfb-config.js"></script>
+  <script src="sfb-sync.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>LCFG Scoreboard</h1>
+      <div class="sub">The numbers that matter, one screen. Goal: $300K online in 2026 · ~$25K/mo.</div>
+    </div>
+    <div class="weekbar">
+      <label>Week of</label>
+      <input type="date" id="weekOf">
+      <span class="saved" id="savedMsg">Saved ✓</span>
+    </div>
+  </header>
+
+  <div class="legend">
+    <span><span class="dot" style="background:#5e7d63"></span>On / above target</span>
+    <span><span class="dot" style="background:#b08a3e"></span>Close (70–99%)</span>
+    <span><span class="dot" style="background:#9c5a4d"></span>Behind (&lt;70%)</span>
+    <span style="color:var(--sage-mid)">Type this week's number in each card — it auto-grades and saves history.</span>
+  </div>
+
+  <div class="section-title">The weekly octave — your 8 core numbers</div>
+  <div class="grid" id="grid"></div>
+
+  <div class="actions">
+    <button class="btn-primary" id="saveBtn">Save this week</button>
+    <button class="btn-ghost" id="targetBtn">Edit targets</button>
+    <button class="btn-ghost" id="exportBtn">Export history (CSV)</button>
+  </div>
+
+  <div class="note" id="footnote"></div>
+</div>
+
+<script>
+// ---- metric definitions (targets are your KPI Tracker goals; baseline = latest known actuals) ----
+const METRICS = [
+  {key:'revenue',   label:'Online revenue (wk)', unit:'$', target:5769, dir:'up', fmt:'money', baseline:null,
+   help:'$300K ÷ 52. Cash collected across all LCFG products this week.'},
+  {key:'enroll',    label:'New $497 enrollments', unit:'', target:10, dir:'up', fmt:'int', baseline:null,
+   help:'New LCFG core enrollments this week.'},
+  {key:'webAtt',    label:'Webinar attendees', unit:'', target:200, dir:'up', fmt:'int', baseline:null,
+   help:'Live attendees on the weekly webinar.'},
+  {key:'webConv',   label:'Webinar → $497 conv', unit:'%', target:8, dir:'up', fmt:'pct', baseline:null,
+   help:'Attendees who bought. Target 8%.'},
+  {key:'list',      label:'Email list size', unit:'', target:25000, dir:'up', fmt:'int', baseline:20000,
+   help:'Total subscribers. Target 25K.'},
+  {key:'revSub',    label:'Revenue / subscriber', unit:'$', target:15, dir:'up', fmt:'money', baseline:null,
+   help:'Monthly online revenue ÷ list size. Target $15.'},
+  {key:'lcfgSkool', label:'LCFG Skool members', unit:'', target:500, dir:'up', fmt:'int', baseline:69,
+   help:'Full Path members. 69 as of May 28.'},
+  {key:'bffSkool',  label:'BFF Skool members', unit:'', target:300, dir:'up', fmt:'int', baseline:188,
+   help:'Beginners members. 188 as of May 28.'},
+];
+
+const LS_HIST='lcfg_scoreboard_history';
+const LS_TGT='lcfg_scoreboard_targets';
+
+function loadTargets(){
+  const saved=JSON.parse(localStorage.getItem(LS_TGT)||'{}');
+  METRICS.forEach(m=>{ if(saved[m.key]!=null) m.target=saved[m.key]; });
+}
+function history(){ return JSON.parse(localStorage.getItem(LS_HIST)||'[]'); }
+
+function fmtNum(v,fmt){
+  if(v==null||v==='') return '—';
+  v=Number(v);
+  if(fmt==='money') return '$'+v.toLocaleString(undefined,{maximumFractionDigits:0});
+  if(fmt==='pct') return v.toFixed(1)+'%';
+  return v.toLocaleString();
+}
+function status(v,m){
+  if(v==null||v==='') return 'n';
+  const pct=Number(v)/m.target;
+  if(pct>=1) return 'g'; if(pct>=0.7) return 'a'; return 'r';
+}
+function latestValue(key){
+  const h=history();
+  for(let i=h.length-1;i>=0;i--){ if(h[i][key]!=null&&h[i][key]!=='') return h[i][key]; }
+  const m=METRICS.find(x=>x.key===key); return m&&m.baseline!=null?m.baseline:'';
+}
+function sparkline(key,m){
+  const h=history().map(r=>r[key]).filter(v=>v!=null&&v!=='').map(Number);
+  if(h.length<2) return '';
+  const w=200,ht=30,mn=Math.min(...h),mx=Math.max(...h),rng=(mx-mn)||1;
+  const pts=h.map((v,i)=>`${(i/(h.length-1))*w},${ht-((v-mn)/rng)*(ht-4)-2}`).join(' ');
+  return `<svg class="spark" viewBox="0 0 ${w} ${ht}" preserveAspectRatio="none">
+    <polyline points="${pts}" fill="none" stroke="#738985" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+}
+
+function render(){
+  const grid=document.getElementById('grid'); grid.innerHTML='';
+  METRICS.forEach(m=>{
+    const cur=latestValue(m.key);
+    const st=status(cur,m);
+    const pct=cur===''?0:Math.min(100,Math.round((Number(cur)/m.target)*100));
+    const stLabel={g:'On track',a:'Close',r:'Behind',n:'No data'}[st];
+    const div=document.createElement('div');
+    div.className='card '+st;
+    div.innerHTML=`
+      <div class="label">${m.label}<span class="pill ${st}">${stLabel}</span></div>
+      <div class="value">${m.unit==='$'?'<span class="unit">$</span>':''}
+        <input type="number" step="any" data-key="${m.key}" value="${cur}" placeholder="—">
+        ${m.unit==='%'?'<span class="unit">%</span>':''}</div>
+      <div class="target">Target: <b>${fmtNum(m.target,m.fmt)}</b>${cur!==''?` · ${pct}% there`:''}</div>
+      <div class="bar"><span class="${st}" style="width:${pct}%"></span></div>
+      ${sparkline(m.key,m)}`;
+    grid.appendChild(div);
+  });
+  document.querySelectorAll('.value input').forEach(inp=>{
+    inp.addEventListener('input',()=>liveStatus(inp));
+  });
+  const h=history();
+  document.getElementById('footnote').innerHTML=
+    `History: <b>${h.length}</b> week(s) saved. Numbers persist in this browser. `+
+    `Pre-loaded with your KPI Tracker targets and latest Skool actuals (May 28) and a 20K list baseline — overwrite as you go.`;
+}
+function liveStatus(inp){
+  const m=METRICS.find(x=>x.key===inp.dataset.key);
+  const card=inp.closest('.card');
+  const st=status(inp.value,m);
+  card.className='card '+st;
+  const pct=inp.value===''?0:Math.min(100,Math.round((Number(inp.value)/m.target)*100));
+  card.querySelector('.bar span').className=st;
+  card.querySelector('.bar span').style.width=pct+'%';
+  const pill=card.querySelector('.pill');
+  pill.className='pill '+st;
+  pill.textContent={g:'On track',a:'Close',r:'Behind',n:'No data'}[st];
+  card.querySelector('.target').innerHTML=`Target: <b>${fmtNum(m.target,m.fmt)}</b>${inp.value!==''?` · ${pct}% there`:''}`;
+}
+
+document.getElementById('saveBtn').addEventListener('click',()=>{
+  const row={weekOf:document.getElementById('weekOf').value||new Date().toISOString().slice(0,10)};
+  document.querySelectorAll('.value input').forEach(inp=>{
+    row[inp.dataset.key]=inp.value===''?null:Number(inp.value);
+  });
+  const h=history();
+  const idx=h.findIndex(r=>r.weekOf===row.weekOf);
+  if(idx>=0) h[idx]=row; else h.push(row);
+  h.sort((a,b)=>a.weekOf.localeCompare(b.weekOf));
+  localStorage.setItem(LS_HIST,JSON.stringify(h));
+  const msg=document.getElementById('savedMsg'); msg.classList.add('show');
+  setTimeout(()=>msg.classList.remove('show'),1600);
+  render();
+});
+
+document.getElementById('targetBtn').addEventListener('click',()=>{
+  const t=JSON.parse(localStorage.getItem(LS_TGT)||'{}');
+  METRICS.forEach(m=>{
+    const v=prompt(`Target for "${m.label}" (number only):`,m.target);
+    if(v!==null&&v.trim()!==''){ m.target=Number(v); t[m.key]=Number(v); }
+  });
+  localStorage.setItem(LS_TGT,JSON.stringify(t));
+  render();
+});
+
+document.getElementById('exportBtn').addEventListener('click',()=>{
+  const h=history(); if(!h.length){alert('No saved weeks yet.');return;}
+  const cols=['weekOf',...METRICS.map(m=>m.key)];
+  const csv=[cols.join(',')].concat(h.map(r=>cols.map(c=>r[c]==null?'':r[c]).join(','))).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='lcfg-scoreboard-history.csv'; a.click();
+});
+
+(function init(){
+  loadTargets();
+  document.getElementById('weekOf').value=new Date().toISOString().slice(0,10);
+  render();
+})();
+</script>
+</body>
+</html>

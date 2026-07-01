@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Golden Section — Paula</title>
+<style>
+  :root{
+    color-scheme: light;
+    --charcoal:#2f2f31; --brown:#5B483D; --sage-dark:#526360; --slate:#546461;
+    --sage-mid:#738985; --sage-light:#A1B0AD; --linen:#DCD1C7; --warm-taupe:#B39C8F;
+    --cream:#ebe6dc; --light-cream:#F0ECE8; --offwhite:#f5f3ee; --nearwhite:#faf9f6;
+    --green:#5e7d63; --green-bg:#e6ede6; --amber:#b08a3e; --amber-bg:#f2ebda; --red:#9c5a4d; --red-bg:#f0e3df;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+    background:var(--cream);color:var(--charcoal);line-height:1.5;padding:24px 18px 50px;}
+  .wrap{max-width:960px;margin:0 auto;}
+  header{border-bottom:2px solid var(--sage-dark);padding-bottom:14px;margin-bottom:16px;}
+  h1{font-size:24px;font-weight:600;color:var(--sage-dark);}
+  .sub{font-size:13px;color:var(--slate);margin-top:3px;}
+  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:12px;margin-bottom:6px;}
+  .metric{background:var(--nearwhite);border:1px solid var(--linen);border-radius:12px;padding:13px 15px;border-left:5px solid var(--sage-mid);}
+  .metric .l{font-size:11px;font-weight:600;color:var(--slate);text-transform:uppercase;letter-spacing:.4px;}
+  .metric .v{font-size:25px;font-weight:600;margin-top:4px;}
+  .metric.gold{border-left-color:var(--green);} .metric.gold .v{color:var(--green);}
+  .metric.drain{border-left-color:var(--red);} .metric.drain .v{color:var(--red);}
+  .metric .x{font-size:11px;color:var(--sage-mid);margin-top:2px;}
+  .section-title{font-size:12.5px;font-weight:700;color:var(--sage-dark);text-transform:uppercase;letter-spacing:.6px;margin:22px 0 8px;}
+  .hint{font-size:11.5px;color:var(--sage-mid);font-weight:400;text-transform:none;letter-spacing:0;margin-left:8px;}
+  .task{background:var(--nearwhite);border:1px solid var(--linen);border-radius:11px;padding:10px 13px;margin-bottom:8px;
+    display:grid;grid-template-columns:1fr 64px auto auto 120px;gap:10px;align-items:center;border-left:5px solid var(--sage-light);}
+  .task.gold{border-left-color:var(--green);} .task.drain{border-left-color:var(--red);} .task.sys{border-left-color:var(--amber);}
+  @media(max-width:680px){.task{grid-template-columns:1fr 56px;grid-auto-rows:auto;}}
+  .task .tn{font-size:13.5px;font-weight:600;}
+  .task .tb{font-size:11px;color:var(--sage-mid);}
+  .hrs{display:flex;align-items:center;gap:4px;}
+  .hrs input{font-family:inherit;font-size:14px;font-weight:600;width:38px;border:1px solid var(--linen);border-radius:6px;padding:4px;text-align:center;background:var(--offwhite);color:var(--charcoal);}
+  .hrs span{font-size:11px;color:var(--sage-mid);}
+  .tag{font-size:11px;font-weight:700;padding:4px 9px;border-radius:20px;cursor:pointer;border:none;font-family:inherit;white-space:nowrap;text-align:center;}
+  .e-drain{background:var(--red-bg);color:var(--red);} .e-neutral{background:var(--light-cream);color:var(--slate);} .e-gain{background:var(--green-bg);color:var(--green);}
+  .z-genius{background:var(--green-bg);color:var(--green);} .z-good{background:var(--light-cream);color:var(--slate);} .z-weak{background:var(--amber-bg);color:var(--amber);}
+  .verdict{font-size:11px;font-weight:700;text-align:right;}
+  .v-keep{color:var(--green);} .v-sys{color:var(--amber);} .v-offload{color:var(--red);}
+  .legend{font-size:11.5px;color:var(--sage-mid);margin-top:18px;line-height:1.7;}
+  .legend b{color:var(--slate);}
+  .payoff{background:var(--sage-dark);color:var(--nearwhite);border-radius:12px;padding:14px 17px;margin:14px 0 4px;font-size:14px;}
+  .payoff b{font-size:17px;}
+</style>
+  <script src="sfb-config.js"></script>
+  <script src="sfb-sync.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Golden Section</h1>
+    <div class="sub">Every task, tagged by energy and skill, so the data tells you the truth: what to pour into, what to systemise, what to get off your plate. Tap a tag to change it; edit any hours. My draft — make it yours.</div>
+  </header>
+
+  <div class="metrics" id="metrics"></div>
+  <div class="payoff" id="payoff"></div>
+
+  <div class="section-title">Your week <span class="hint">hrs · energy · zone of genius · verdict</span></div>
+  <div id="tasks"></div>
+
+  <div class="legend">
+    <b>Energy:</b> drains you · neutral · feeds you. &nbsp; <b>Zone:</b> genius (only you) · good (you're fine at it) · weakness (someone's better).<br>
+    <b>Verdict logic:</b> feeds you + genius → <b>pour in / scale</b> · neutral or repeatable → <b>systemise</b> (build the SOP) · drains you + not genius → <b>offload</b> (delegate, outsource, automate). The offload hours are the ones to win back first.
+  </div>
+</div>
+
+<script>
+const KEY='lcfg_golden_section';
+const E_CYCLE=['drain','neutral','gain']; const E_LBL={drain:'Drains',neutral:'Neutral',gain:'Feeds'};
+const Z_CYCLE=['genius','good','weak']; const Z_LBL={genius:'Genius',good:'Good',weak:'Weakness'};
+
+const DEFAULT=[
+  {id:'webinar',n:'Weekly webinar (prep + deliver)',b:'LCFG',h:5,e:'gain',z:'genius'},
+  {id:'email',n:'Email writing + broadcasts',b:'LCFG',h:3,e:'neutral',z:'good'},
+  {id:'skool',n:'Skool replies + posts (both groups)',b:'LCFG',h:6,e:'drain',z:'good'},
+  {id:'podrec',n:'Podcast recording',b:'LCFG',h:2,e:'gain',z:'genius'},
+  {id:'podedit',n:'Podcast / video editing',b:'LCFG',h:4,e:'drain',z:'weak'},
+  {id:'course',n:'Course production / recording',b:'LCFG',h:2,e:'neutral',z:'good'},
+  {id:'support',n:'Customer support + refunds',b:'LCFG',h:2,e:'drain',z:'weak'},
+  {id:'tech',n:'Tech / funnels admin',b:'LCFG',h:2,e:'drain',z:'weak'},
+  {id:'design',n:'Floral design (weddings / studio)',b:'BFF',h:6,e:'gain',z:'genius'},
+  {id:'farmstand',n:'Farm stand restock + run',b:'BFF',h:4,e:'neutral',z:'good'},
+  {id:'field',n:'Field work (plant / weed / harvest)',b:'BFF',h:8,e:'neutral',z:'good'},
+  {id:'fulfill',n:'Online order fulfillment / packing',b:'BFF',h:2,e:'drain',z:'weak'},
+  {id:'wedding',n:'Wedding inquiries + coordination',b:'BFF',h:2,e:'neutral',z:'good'},
+  {id:'books',n:'Bookkeeping',b:'Both',h:2,e:'drain',z:'weak'},
+  {id:'admin',n:'Admin / inbox / scheduling',b:'Both',h:4,e:'drain',z:'weak'},
+  {id:'content',n:'Content planning / social',b:'Both',h:2,e:'neutral',z:'good'}
+];
+
+let tasks=JSON.parse(localStorage.getItem(KEY)||'null')||JSON.parse(JSON.stringify(DEFAULT));
+function save(){localStorage.setItem(KEY,JSON.stringify(tasks));}
+
+function verdict(t){
+  if(t.e==='gain'&&t.z==='genius') return {k:'keep',l:'Pour in / scale',cls:'gold',vc:'v-keep'};
+  if(t.e==='drain'&&t.z!=='genius') return {k:'offload',l:'Offload',cls:'drain',vc:'v-offload'};
+  if(t.z==='weak') return {k:'offload',l:'Offload',cls:'drain',vc:'v-offload'};
+  return {k:'sys',l:'Systemise',cls:'sys',vc:'v-sys'};
+}
+
+function render(){
+  const c=document.getElementById('tasks'); c.innerHTML='';
+  tasks.forEach((t,i)=>{
+    const v=verdict(t);
+    const d=document.createElement('div'); d.className='task '+v.cls;
+    d.innerHTML=`
+      <div><div class="tn">${t.n}</div><div class="tb">${t.b}</div></div>
+      <div class="hrs"><input type="number" min="0" step="0.5" value="${t.h}" data-i="${i}"><span>h/wk</span></div>
+      <button class="tag e-${t.e}" data-et="${i}">${E_LBL[t.e]}</button>
+      <button class="tag z-${t.z}" data-zt="${i}">${Z_LBL[t.z]}</button>
+      <div class="verdict ${v.vc}">${v.l}</div>`;
+    c.appendChild(d);
+  });
+  c.querySelectorAll('input[data-i]').forEach(inp=>inp.addEventListener('input',()=>{tasks[inp.dataset.i].h=Number(inp.value)||0;save();metrics();}));
+  c.querySelectorAll('[data-et]').forEach(b=>b.onclick=()=>{const t=tasks[b.dataset.et];t.e=E_CYCLE[(E_CYCLE.indexOf(t.e)+1)%3];save();render();});
+  c.querySelectorAll('[data-zt]').forEach(b=>b.onclick=()=>{const t=tasks[b.dataset.zt];t.z=Z_CYCLE[(Z_CYCLE.indexOf(t.z)+1)%3];save();render();});
+  metrics();
+}
+
+function metrics(){
+  const total=tasks.reduce((s,t)=>s+t.h,0);
+  const gold=tasks.filter(t=>t.e==='gain'&&t.z==='genius').reduce((s,t)=>s+t.h,0);
+  const offload=tasks.filter(t=>verdict(t).k==='offload').reduce((s,t)=>s+t.h,0);
+  const sys=tasks.filter(t=>verdict(t).k==='sys').reduce((s,t)=>s+t.h,0);
+  const pct=v=>total?Math.round(v/total*100):0;
+  document.getElementById('metrics').innerHTML=`
+    <div class="metric"><div class="l">Total week</div><div class="v">${total}h</div><div class="x">across both businesses</div></div>
+    <div class="metric gold"><div class="l">Gold — feeds you + genius</div><div class="v">${gold}h</div><div class="x">${pct(gold)}% of your week</div></div>
+    <div class="metric drain"><div class="l">Hours to win back</div><div class="v">${offload}h</div><div class="x">${pct(offload)}% — offload these first</div></div>
+    <div class="metric"><div class="l">To systemise</div><div class="v">${sys}h</div><div class="x">build the SOP</div></div>`;
+  document.getElementById('payoff').innerHTML=
+    `If you offloaded the <b>${offload} draining hours</b>, you'd reclaim them for the <b>${gold} hours of gold</b> — the webinar, the design, the work only you can do. That's the whole point: flip the week toward what grows the business and feeds you.`;
+}
+render();
+</script>
+</body>
+</html>

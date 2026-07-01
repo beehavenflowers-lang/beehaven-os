@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Org Chart — LCFG + BFF</title>
+<style>
+  :root{
+    color-scheme: light;
+    --charcoal:#2f2f31; --brown:#5B483D; --sage-dark:#526360; --slate:#546461;
+    --sage-mid:#738985; --sage-light:#A1B0AD; --linen:#DCD1C7; --warm-taupe:#B39C8F;
+    --cream:#ebe6dc; --light-cream:#F0ECE8; --offwhite:#f5f3ee; --nearwhite:#faf9f6;
+    --green:#5e7d63; --green-bg:#e6ede6; --amber:#b08a3e; --amber-bg:#f2ebda; --red:#9c5a4d; --red-bg:#f0e3df;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+    background:var(--cream);color:var(--charcoal);line-height:1.5;padding:24px 18px 50px;}
+  .wrap{max-width:960px;margin:0 auto;}
+  header{border-bottom:2px solid var(--sage-dark);padding-bottom:14px;margin-bottom:16px;}
+  h1{font-size:24px;font-weight:600;color:var(--sage-dark);}
+  .sub{font-size:13px;color:var(--slate);margin-top:3px;}
+  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:8px;}
+  .metric{background:var(--nearwhite);border:1px solid var(--linen);border-radius:12px;padding:13px 15px;border-left:5px solid var(--sage-mid);}
+  .metric .l{font-size:11.5px;font-weight:600;color:var(--slate);text-transform:uppercase;letter-spacing:.4px;}
+  .metric .v{font-size:26px;font-weight:600;margin-top:4px;}
+  .metric.warn{border-left-color:var(--amber);} .metric.warn .v{color:var(--amber);}
+  .section-title{font-size:12.5px;font-weight:700;color:var(--sage-dark);text-transform:uppercase;letter-spacing:.6px;margin:24px 0 8px;}
+  .hint{font-size:11.5px;color:var(--sage-mid);font-weight:400;text-transform:none;letter-spacing:0;margin-left:8px;}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:680px){.cols{grid-template-columns:1fr;}}
+  .seat{background:var(--nearwhite);border:1px solid var(--linen);border-radius:11px;padding:11px 13px;margin-bottom:9px;border-left:5px solid var(--sage-light);}
+  .seat.you{border-left-color:var(--amber);background:#fbf6ec;}
+  .seat.locked{border-left-color:var(--sage-dark);}
+  .seat.team{border-left-color:var(--green);}
+  .seat .sh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .seat .sn{font-size:14px;font-weight:600;}
+  .seat .badge{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;padding:2px 7px;border-radius:20px;white-space:nowrap;}
+  .badge.you{background:var(--amber-bg);color:var(--amber);}
+  .badge.locked{background:var(--sage-dark);color:var(--nearwhite);}
+  .badge.team{background:var(--green-bg);color:var(--green);}
+  .seat .owner{font-size:12.5px;color:var(--slate);margin-top:4px;}
+  .seat .owner b{color:var(--charcoal);}
+  .seat .arrow{color:var(--sage-mid);}
+  .seat .target{color:var(--sage-dark);font-weight:600;}
+  .seat .note{font-size:11px;color:var(--sage-mid);margin-top:3px;}
+  .founderrow{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:680px){.founderrow{grid-template-columns:1fr;}}
+  .legend{font-size:11.5px;color:var(--sage-mid);margin-top:18px;line-height:1.7;}
+  .legend b{color:var(--slate);}
+</style>
+  <script src="sfb-config.js"></script>
+  <script src="sfb-sync.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Org Chart</h1>
+    <div class="sub">Every seat in both businesses — who owns it now, who it's meant to go to. Today most seats are you. The path off your plate is the work. Edit the owner of any seat as the team forms.</div>
+  </header>
+
+  <div class="metrics" id="metrics"></div>
+
+  <div class="section-title">Founder &amp; shared seats</div>
+  <div class="founderrow" id="founder"></div>
+
+  <div class="cols">
+    <div>
+      <div class="section-title">LCFG <span class="hint">online</span></div>
+      <div id="lcfg"></div>
+    </div>
+    <div>
+      <div class="section-title">BFF <span class="hint">farm + studio</span></div>
+      <div id="bff"></div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <b>Amber</b> = on your plate today · <b>Dark</b> = your seat for good (Visionary, your zones of genius) · <b>Green</b> = held by someone else or seasonal.<br>
+    The number that matters: seats still on you. Every one you hand off drops it. Click any owner name to update it — the count recalculates.
+  </div>
+</div>
+
+<script>
+const KEY='lcfg_org_owners';
+let owners=JSON.parse(localStorage.getItem(KEY)||'{}');
+function saveOwners(){localStorage.setItem(KEY,JSON.stringify(owners));}
+
+// locked = Paula's seat for good; you = currently Paula but should offload; team = already someone else/seasonal
+const SEATS={
+  founder:[
+    {id:'visionary',n:'Visionary',owner:'Paula',target:'Paula',type:'locked',note:'Vision, brand, IP, content — yours forever'},
+    {id:'integrator',n:'Integrator / CEO',owner:'Paula',target:'Target hire',type:'you',note:'#1 hire to escape the technician trap'},
+    {id:'bookkeeper',n:'Bookkeeper',owner:'Paula',target:'Outsource',type:'you',note:'Monthly close — outsource ASAP'},
+    {id:'admin',n:'Admin / VA',owner:'Paula',target:'Outsource',type:'you',note:'Inbox, scheduling, files — outsource ASAP'},
+    {id:'legal',n:'Legal Counsel',owner:'TBD',target:'As needed',type:'team',note:'Retainer or per-project'}
+  ],
+  lcfg:[
+    {id:'mkt',n:'Marketing Lead',owner:'Paula',target:'Target hire',type:'you',note:'Email, ads, funnels — top growth function'},
+    {id:'sales',n:'Sales / Webinar Lead',owner:'Paula',target:'Paula or hire',type:'you',note:'Webinar delivery + close — keep for now'},
+    {id:'course',n:'Course Production',owner:'Paula',target:'Contractor',type:'you',note:'Outsource heavy editing'},
+    {id:'skool',n:'Skool Community Mgr',owner:'Paula',target:'Target hire',type:'you',note:'Time-intensive'},
+    {id:'podcast',n:'Content / Podcast Producer',owner:'Paula',target:'Contractor',type:'you',note:'Ripe for outsource'},
+    {id:'support',n:'Customer Support',owner:'Paula',target:'VA',type:'you',note:'Easy to delegate'},
+    {id:'tech',n:'Tech / Funnels Admin',owner:'Paula',target:'Contractor',type:'you',note:'Specialist contractor'}
+  ],
+  bff:[
+    {id:'studio',n:'Studio Manager',owner:'Paula',target:'Target hire',type:'you',note:'Owns design + sales'},
+    {id:'designer',n:'Floral Designer',owner:'Paula',target:'Paula or hire',type:'locked',note:'Your zone of genius'},
+    {id:'wedding',n:'Wedding / Event Coord',owner:'Paula',target:'Hire',type:'you',note:'Could be hourly contractor'},
+    {id:'farmstand',n:'Farm Stand Lead',owner:'Seasonal',target:'Seasonal',type:'team',note:'Seasonal hire'},
+    {id:'fulfill',n:'Online Order Fulfillment',owner:'Paula',target:'Hire',type:'you',note:'Admin tier'},
+    {id:'field',n:'Field Manager',owner:'Paula',target:'Target hire',type:'you',note:'Future seasonal manager'},
+    {id:'fieldhand',n:'Field Hands',owner:'Seasonal',target:'Seasonal',type:'team',note:'Partly delegated already'}
+  ]
+};
+
+function ownerOf(s){return owners[s.id]!=null?owners[s.id]:s.owner;}
+function isYou(s){return /paula/i.test(ownerOf(s));}
+
+function seatHtml(s){
+  const o=ownerOf(s);
+  const you=isYou(s);
+  const cls = s.type==='locked' && you ? 'locked' : (you ? 'you' : 'team');
+  const badge = s.type==='locked' && you ? '<span class="badge locked">Your seat</span>'
+    : (you ? '<span class="badge you">On you</span>' : '<span class="badge team">Delegated</span>');
+  return `<div class="seat ${cls}">
+    <div class="sh"><span class="sn">${s.n}</span>${badge}</div>
+    <div class="owner"><b contenteditable data-id="${s.id}">${o}</b> <span class="arrow">→</span> <span class="target">${s.target}</span></div>
+    <div class="note">${s.note}</div>
+  </div>`;
+}
+
+function render(){
+  document.getElementById('founder').innerHTML=SEATS.founder.map(seatHtml).join('');
+  document.getElementById('lcfg').innerHTML=SEATS.lcfg.map(seatHtml).join('');
+  document.getElementById('bff').innerHTML=SEATS.bff.map(seatHtml).join('');
+  const all=[...SEATS.founder,...SEATS.lcfg,...SEATS.bff];
+  const total=all.length;
+  const youCount=all.filter(isYou).length;
+  const offload=all.filter(s=>isYou(s)&&s.type==='you').length;
+  document.getElementById('metrics').innerHTML=`
+    <div class="metric warn"><div class="l">Seats still on you</div><div class="v">${youCount} / ${total}</div></div>
+    <div class="metric"><div class="l">Flagged to offload</div><div class="v">${offload}</div></div>
+    <div class="metric"><div class="l">Off your plate</div><div class="v">${total-youCount}</div></div>`;
+  document.querySelectorAll('[contenteditable][data-id]').forEach(el=>{
+    el.addEventListener('blur',()=>{owners[el.dataset.id]=el.textContent.trim();saveOwners();render();});
+  });
+}
+render();
+</script>
+</body>
+</html>
