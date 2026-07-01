@@ -32,6 +32,9 @@
   .seat.you{border-left-color:var(--amber);background:#fbf6ec;}
   .seat.locked{border-left-color:var(--sage-dark);}
   .seat.team{border-left-color:var(--green);}
+  .seat.dragging{opacity:.4;}
+  .seat.dragover{box-shadow:0 0 0 2px var(--sage-mid);}
+  .handle{cursor:grab;color:var(--sage-light);font-size:15px;line-height:1;user-select:none;margin-right:4px;}
   .seat .sh{display:flex;justify-content:space-between;align-items:center;gap:8px;}
   .seat .sn{font-size:14px;font-weight:600;outline:none;padding:2px 4px;border-radius:5px;flex:1;}
   .seat .sn:focus{background:var(--light-cream);}
@@ -115,8 +118,9 @@ function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replac
 function get(id){return state.seats.find(s=>s.id===id);}
 
 function seatHtml(s){
-  return `<div class="seat ${s.status}">
+  return `<div class="seat ${s.status}" data-seatid="${s.id}">
     <div class="sh">
+      <span class="handle" draggable="true" data-drag="${s.id}" title="Drag to move">⠿</span>
       <span class="sn" contenteditable data-f="n" data-id="${s.id}">${esc(s.n)}</span>
       <button class="badge ${s.status}" data-badge="${s.id}">${SLABEL[s.status]}</button>
     </div>
@@ -154,7 +158,25 @@ function wire(){
     state.seats.push({id:'s'+Date.now(),g:b.dataset.add,n:'New seat',owner:'Paula',target:'',status:'you',note:''});
     save(); render();
   });
+  // drag a card by its handle, drop on another card to move it there (across sections too)
+  document.querySelectorAll('[data-drag]').forEach(h=>{
+    h.addEventListener('dragstart',e=>{dragId=h.dataset.drag;e.dataTransfer.effectAllowed='move';h.closest('.seat').classList.add('dragging');});
+    h.addEventListener('dragend',()=>document.querySelectorAll('.seat').forEach(x=>x.classList.remove('dragging','dragover')));
+  });
+  document.querySelectorAll('.seat').forEach(c=>{
+    c.addEventListener('dragover',e=>{e.preventDefault();c.classList.add('dragover');});
+    c.addEventListener('dragleave',()=>c.classList.remove('dragover'));
+    c.addEventListener('drop',e=>{e.preventDefault();c.classList.remove('dragover');
+      if(!dragId||dragId===c.dataset.seatid)return;
+      const from=state.seats.findIndex(s=>s.id===dragId);
+      const tg=state.seats.find(s=>s.id===c.dataset.seatid).g;
+      const[m]=state.seats.splice(from,1); m.g=tg;
+      const to=state.seats.findIndex(s=>s.id===c.dataset.seatid);
+      state.seats.splice(to,0,m); save(); render();
+    });
+  });
 }
+let dragId=null;
 render();
 </script>
 </body>
