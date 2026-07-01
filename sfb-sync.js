@@ -5,6 +5,20 @@
    file does nothing and every dashboard stays purely local. Never edit this file. */
 (function () {
   "use strict";
+
+  // "← All dashboards" link back to the hub — on every dashboard except the hub itself.
+  function addBackLink() {
+    var p = location.pathname;
+    if (/index\.html$/.test(p) || p.endsWith("/")) return;
+    var a = document.createElement("a");
+    a.href = "index.html";
+    a.textContent = "← All dashboards";
+    a.style.cssText = "position:fixed;top:12px;right:12px;z-index:9998;background:#526360;color:#faf9f6;font:600 12px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:7px 12px;border-radius:8px;text-decoration:none;box-shadow:0 2px 8px rgba(82,99,96,.2);";
+    document.body.appendChild(a);
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", addBackLink);
+  else addBackLink();
+
   var PREFIX = "lcfg_";                 // only our OS keys are synced
   var url = window.SFB_SUPABASE_URL, key = window.SFB_SUPABASE_ANON_KEY;
 
