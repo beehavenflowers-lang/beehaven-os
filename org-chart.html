@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Org Chart — LCFG + BFF</title>
+<script src="sfb-config.js"></script>
+<script src="sfb-sync.js"></script>
 <style>
   :root{
     color-scheme: light;
@@ -26,124 +28,131 @@
   .metric.warn{border-left-color:var(--amber);} .metric.warn .v{color:var(--amber);}
   .section-title{font-size:12.5px;font-weight:700;color:var(--sage-dark);text-transform:uppercase;letter-spacing:.6px;margin:24px 0 8px;}
   .hint{font-size:11.5px;color:var(--sage-mid);font-weight:400;text-transform:none;letter-spacing:0;margin-left:8px;}
-  .cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-  @media(max-width:680px){.cols{grid-template-columns:1fr;}}
   .seat{background:var(--nearwhite);border:1px solid var(--linen);border-radius:11px;padding:11px 13px;margin-bottom:9px;border-left:5px solid var(--sage-light);}
   .seat.you{border-left-color:var(--amber);background:#fbf6ec;}
   .seat.locked{border-left-color:var(--sage-dark);}
   .seat.team{border-left-color:var(--green);}
-  .seat .sh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
-  .seat .sn{font-size:14px;font-weight:600;}
-  .seat .badge{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;padding:2px 7px;border-radius:20px;white-space:nowrap;}
+  .seat .sh{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .seat .sn{font-size:14px;font-weight:600;outline:none;padding:2px 4px;border-radius:5px;flex:1;}
+  .seat .sn:focus{background:var(--light-cream);}
+  .badge{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;padding:3px 9px;border-radius:20px;white-space:nowrap;cursor:pointer;border:none;font-family:inherit;}
   .badge.you{background:var(--amber-bg);color:var(--amber);}
   .badge.locked{background:var(--sage-dark);color:var(--nearwhite);}
   .badge.team{background:var(--green-bg);color:var(--green);}
-  .seat .owner{font-size:12.5px;color:var(--slate);margin-top:4px;}
-  .seat .owner b{color:var(--charcoal);}
+  .seat .owner{font-size:12.5px;color:var(--slate);margin-top:5px;}
+  .seat .owner b,.seat .owner .target{outline:none;padding:1px 3px;border-radius:4px;}
+  .seat .owner b{color:var(--charcoal);font-weight:600;}
+  .seat .owner b:focus,.seat .owner .target:focus{background:var(--light-cream);}
   .seat .arrow{color:var(--sage-mid);}
   .seat .target{color:var(--sage-dark);font-weight:600;}
-  .seat .note{font-size:11px;color:var(--sage-mid);margin-top:3px;}
-  .founderrow{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-  @media(max-width:680px){.founderrow{grid-template-columns:1fr;}}
+  .seat .note{font-size:11px;color:var(--sage-mid);margin-top:4px;outline:none;padding:1px 3px;border-radius:4px;}
+  .seat .note:focus{background:var(--light-cream);}
+  .seat .del{font-size:11px;color:var(--red);cursor:pointer;background:none;border:none;font-family:inherit;font-weight:600;padding:0;margin-top:7px;}
+  .addseat{background:none;border:1px dashed var(--sage-light);border-radius:10px;padding:9px;width:100%;text-align:center;
+    font-family:inherit;font-size:12.5px;font-weight:600;color:var(--sage-mid);cursor:pointer;margin-bottom:9px;}
+  .addseat:hover{border-color:var(--sage-dark);color:var(--sage-dark);}
   .legend{font-size:11.5px;color:var(--sage-mid);margin-top:18px;line-height:1.7;}
   .legend b{color:var(--slate);}
 </style>
-  <script src="sfb-config.js"></script>
-  <script src="sfb-sync.js"></script>
 </head>
 <body>
 <div class="wrap">
   <header>
     <h1>Org Chart</h1>
-    <div class="sub">Every seat in both businesses — who owns it now, who it's meant to go to. Today most seats are you. The path off your plate is the work. Edit the owner of any seat as the team forms.</div>
+    <div class="sub">Every seat in both businesses. Click a name, owner, target, or note to edit. Tap the tag to set the status. Add or delete seats as your team changes.</div>
   </header>
 
   <div class="metrics" id="metrics"></div>
 
   <div class="section-title">Founder &amp; shared seats</div>
-  <div class="founderrow" id="founder"></div>
+  <div id="founder"></div>
+  <button class="addseat" data-add="founder">+ Add seat</button>
 
-  <div class="cols">
-    <div>
-      <div class="section-title">LCFG <span class="hint">online</span></div>
-      <div id="lcfg"></div>
-    </div>
-    <div>
-      <div class="section-title">BFF <span class="hint">farm + studio</span></div>
-      <div id="bff"></div>
-    </div>
-  </div>
+  <div class="section-title">LCFG <span class="hint">online</span></div>
+  <div id="lcfg"></div>
+  <button class="addseat" data-add="lcfg">+ Add seat</button>
+
+  <div class="section-title">BFF <span class="hint">farm + studio</span></div>
+  <div id="bff"></div>
+  <button class="addseat" data-add="bff">+ Add seat</button>
 
   <div class="legend">
-    <b>Amber</b> = on your plate today · <b>Dark</b> = your seat for good (Visionary, your zones of genius) · <b>Green</b> = held by someone else or seasonal.<br>
-    The number that matters: seats still on you. Every one you hand off drops it. Click any owner name to update it — the count recalculates.
+    <b>Tap the tag to cycle it:</b> On you (amber) → Your seat, yours for good (dark) → Delegated (green).<br>
+    The number that matters is <b>seats still on you</b> — every one you hand off drops it.
   </div>
 </div>
 
 <script>
-const KEY='lcfg_org_owners';
-let owners=JSON.parse(localStorage.getItem(KEY)||'{}');
-function saveOwners(){localStorage.setItem(KEY,JSON.stringify(owners));}
+const KEY='lcfg_org_seats';
+const STATUS=['you','locked','team'];
+const SLABEL={you:'On you',locked:'Your seat',team:'Delegated'};
 
-// locked = Paula's seat for good; you = currently Paula but should offload; team = already someone else/seasonal
-const SEATS={
-  founder:[
-    {id:'visionary',n:'Visionary',owner:'Paula',target:'Paula',type:'locked',note:'Vision, brand, IP, content — yours forever'},
-    {id:'integrator',n:'Integrator / CEO',owner:'Paula',target:'Target hire',type:'you',note:'#1 hire to escape the technician trap'},
-    {id:'bookkeeper',n:'Bookkeeper',owner:'Paula',target:'Outsource',type:'you',note:'Monthly close — outsource ASAP'},
-    {id:'admin',n:'Admin / VA',owner:'Paula',target:'Outsource',type:'you',note:'Inbox, scheduling, files — outsource ASAP'},
-    {id:'legal',n:'Legal Counsel',owner:'TBD',target:'As needed',type:'team',note:'Retainer or per-project'}
-  ],
-  lcfg:[
-    {id:'mkt',n:'Marketing Lead',owner:'Paula',target:'Target hire',type:'you',note:'Email, ads, funnels — top growth function'},
-    {id:'sales',n:'Sales / Webinar Lead',owner:'Paula',target:'Paula or hire',type:'you',note:'Webinar delivery + close — keep for now'},
-    {id:'course',n:'Course Production',owner:'Paula',target:'Contractor',type:'you',note:'Outsource heavy editing'},
-    {id:'skool',n:'Skool Community Mgr',owner:'Paula',target:'Target hire',type:'you',note:'Time-intensive'},
-    {id:'podcast',n:'Content / Podcast Producer',owner:'Paula',target:'Contractor',type:'you',note:'Ripe for outsource'},
-    {id:'support',n:'Customer Support',owner:'Paula',target:'VA',type:'you',note:'Easy to delegate'},
-    {id:'tech',n:'Tech / Funnels Admin',owner:'Paula',target:'Contractor',type:'you',note:'Specialist contractor'}
-  ],
-  bff:[
-    {id:'studio',n:'Studio Manager',owner:'Paula',target:'Target hire',type:'you',note:'Owns design + sales'},
-    {id:'designer',n:'Floral Designer',owner:'Paula',target:'Paula or hire',type:'locked',note:'Your zone of genius'},
-    {id:'wedding',n:'Wedding / Event Coord',owner:'Paula',target:'Hire',type:'you',note:'Could be hourly contractor'},
-    {id:'farmstand',n:'Farm Stand Lead',owner:'Seasonal',target:'Seasonal',type:'team',note:'Seasonal hire'},
-    {id:'fulfill',n:'Online Order Fulfillment',owner:'Paula',target:'Hire',type:'you',note:'Admin tier'},
-    {id:'field',n:'Field Manager',owner:'Paula',target:'Target hire',type:'you',note:'Future seasonal manager'},
-    {id:'fieldhand',n:'Field Hands',owner:'Seasonal',target:'Seasonal',type:'team',note:'Partly delegated already'}
-  ]
-};
+const SEED={seats:[
+  {id:'visionary',g:'founder',n:'Visionary',owner:'Paula',target:'Paula',status:'locked',note:'Vision, brand, IP, content — yours forever'},
+  {id:'integrator',g:'founder',n:'Integrator / CEO',owner:'Paula',target:'Target hire',status:'you',note:'#1 hire to escape the technician trap'},
+  {id:'bookkeeper',g:'founder',n:'Bookkeeper',owner:'Paula',target:'Outsource',status:'you',note:'Just hired — click the name to enter your bookkeeper, then tap the tag to Delegated'},
+  {id:'admin',g:'founder',n:'Admin / VA',owner:'Paula',target:'Outsource',status:'you',note:'Inbox, scheduling, files — outsource ASAP'},
+  {id:'legal',g:'founder',n:'Legal Counsel',owner:'TBD',target:'As needed',status:'team',note:'Retainer or per-project'},
+  {id:'mkt',g:'lcfg',n:'Marketing Lead',owner:'Paula',target:'Target hire',status:'you',note:'Email, ads, funnels — top growth function'},
+  {id:'sales',g:'lcfg',n:'Sales / Webinar Lead',owner:'Paula',target:'Paula or hire',status:'you',note:'Webinar delivery + close — keep for now'},
+  {id:'course',g:'lcfg',n:'Course Production',owner:'Paula',target:'Contractor',status:'you',note:'Outsource heavy editing'},
+  {id:'skool',g:'lcfg',n:'Skool Community Mgr',owner:'Paula',target:'Target hire',status:'you',note:'Time-intensive'},
+  {id:'podcast',g:'lcfg',n:'Content / Podcast Producer',owner:'Paula',target:'Contractor',status:'you',note:'Ripe for outsource'},
+  {id:'support',g:'lcfg',n:'Customer Support',owner:'Paula',target:'VA',status:'you',note:'Easy to delegate'},
+  {id:'tech',g:'lcfg',n:'Tech / Funnels Admin',owner:'Paula',target:'Contractor',status:'you',note:'Specialist contractor'},
+  {id:'studio',g:'bff',n:'Studio Manager',owner:'Paula',target:'Target hire',status:'you',note:'Owns design + sales'},
+  {id:'designer',g:'bff',n:'Floral Designer',owner:'Jandi, Valerie & Paula',target:'Paula or hire',status:'locked',note:'Your zone of genius'},
+  {id:'wedding',g:'bff',n:'Wedding / Event Coord',owner:'Paula',target:'Hire',status:'you',note:'Could be hourly contractor'},
+  {id:'farmstand',g:'bff',n:'Farm Stand Lead',owner:'Seasonal',target:'Seasonal',status:'team',note:'Seasonal hire'},
+  {id:'fulfill',g:'bff',n:'Online Order Fulfillment',owner:'Paula',target:'Hire',status:'you',note:'Admin tier'},
+  {id:'field',g:'bff',n:'Field Manager',owner:'Paula',target:'Target hire',status:'you',note:'Future seasonal manager'},
+  {id:'fieldhand',g:'bff',n:'Field Hands',owner:'Seasonal',target:'Seasonal',status:'team',note:'Partly delegated already'}
+]};
 
-function ownerOf(s){return owners[s.id]!=null?owners[s.id]:s.owner;}
-function isYou(s){return /paula/i.test(ownerOf(s));}
+let state=JSON.parse(localStorage.getItem(KEY)||'null')||JSON.parse(JSON.stringify(SEED));
+function save(){localStorage.setItem(KEY,JSON.stringify(state));}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function get(id){return state.seats.find(s=>s.id===id);}
 
 function seatHtml(s){
-  const o=ownerOf(s);
-  const you=isYou(s);
-  const cls = s.type==='locked' && you ? 'locked' : (you ? 'you' : 'team');
-  const badge = s.type==='locked' && you ? '<span class="badge locked">Your seat</span>'
-    : (you ? '<span class="badge you">On you</span>' : '<span class="badge team">Delegated</span>');
-  return `<div class="seat ${cls}">
-    <div class="sh"><span class="sn">${s.n}</span>${badge}</div>
-    <div class="owner"><b contenteditable data-id="${s.id}">${o}</b> <span class="arrow">→</span> <span class="target">${s.target}</span></div>
-    <div class="note">${s.note}</div>
+  return `<div class="seat ${s.status}">
+    <div class="sh">
+      <span class="sn" contenteditable data-f="n" data-id="${s.id}">${esc(s.n)}</span>
+      <button class="badge ${s.status}" data-badge="${s.id}">${SLABEL[s.status]}</button>
+    </div>
+    <div class="owner"><b contenteditable data-f="owner" data-id="${s.id}">${esc(s.owner)}</b> <span class="arrow">→</span> <span class="target" contenteditable data-f="target" data-id="${s.id}">${esc(s.target)}</span></div>
+    <div class="note" contenteditable data-f="note" data-id="${s.id}">${esc(s.note)}</div>
+    <button class="del" data-del="${s.id}">Delete seat</button>
   </div>`;
 }
 
 function render(){
-  document.getElementById('founder').innerHTML=SEATS.founder.map(seatHtml).join('');
-  document.getElementById('lcfg').innerHTML=SEATS.lcfg.map(seatHtml).join('');
-  document.getElementById('bff').innerHTML=SEATS.bff.map(seatHtml).join('');
-  const all=[...SEATS.founder,...SEATS.lcfg,...SEATS.bff];
-  const total=all.length;
-  const youCount=all.filter(isYou).length;
-  const offload=all.filter(s=>isYou(s)&&s.type==='you').length;
+  ['founder','lcfg','bff'].forEach(g=>{
+    document.getElementById(g).innerHTML=state.seats.filter(s=>s.g===g).map(seatHtml).join('');
+  });
+  const stillOnYou=state.seats.filter(s=>s.status==='you'||s.status==='locked').length;
+  const toOffload=state.seats.filter(s=>s.status==='you').length;
+  const offPlate=state.seats.filter(s=>s.status==='team').length;
   document.getElementById('metrics').innerHTML=`
-    <div class="metric warn"><div class="l">Seats still on you</div><div class="v">${youCount} / ${total}</div></div>
-    <div class="metric"><div class="l">Flagged to offload</div><div class="v">${offload}</div></div>
-    <div class="metric"><div class="l">Off your plate</div><div class="v">${total-youCount}</div></div>`;
-  document.querySelectorAll('[contenteditable][data-id]').forEach(el=>{
-    el.addEventListener('blur',()=>{owners[el.dataset.id]=el.textContent.trim();saveOwners();render();});
+    <div class="metric warn"><div class="l">Seats still on you</div><div class="v">${stillOnYou} / ${state.seats.length}</div></div>
+    <div class="metric"><div class="l">Flagged to offload</div><div class="v">${toOffload}</div></div>
+    <div class="metric"><div class="l">Off your plate</div><div class="v">${offPlate}</div></div>`;
+  wire();
+}
+
+function wire(){
+  document.querySelectorAll('[contenteditable][data-id]').forEach(el=>el.addEventListener('blur',()=>{
+    get(el.dataset.id)[el.dataset.f]=el.textContent.trim(); save();
+  }));
+  document.querySelectorAll('[data-badge]').forEach(b=>b.onclick=()=>{
+    const s=get(b.dataset.badge); s.status=STATUS[(STATUS.indexOf(s.status)+1)%3]; save(); render();
+  });
+  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{
+    if(confirm('Delete this seat?')){state.seats=state.seats.filter(s=>s.id!==b.dataset.del); save(); render();}
+  });
+  document.querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{
+    state.seats.push({id:'s'+Date.now(),g:b.dataset.add,n:'New seat',owner:'Paula',target:'',status:'you',note:''});
+    save(); render();
   });
 }
 render();
