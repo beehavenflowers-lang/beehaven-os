@@ -25,13 +25,14 @@
   .metric{background:var(--nearwhite);border:1px solid var(--linen);border-radius:12px;padding:13px 15px;border-left:5px solid var(--sage-mid);}
   .metric .l{font-size:11.5px;font-weight:600;color:var(--slate);text-transform:uppercase;letter-spacing:.4px;}
   .metric .v{font-size:26px;font-weight:600;margin-top:4px;}
-  .metric.warn{border-left-color:var(--amber);} .metric.warn .v{color:var(--amber);}
+  .metric.orange{border-left-color:#c06a35;} .metric.orange .v{color:#c06a35;}
+  .metric.green{border-left-color:#5e7d63;} .metric.green .v{color:#5e7d63;}
   .section-title{font-size:12.5px;font-weight:700;color:var(--sage-dark);text-transform:uppercase;letter-spacing:.6px;margin:24px 0 8px;}
   .hint{font-size:11.5px;color:var(--sage-mid);font-weight:400;text-transform:none;letter-spacing:0;margin-left:8px;}
   .seat{background:var(--nearwhite);border:1px solid var(--linen);border-radius:11px;padding:11px 13px;margin-bottom:9px;border-left:5px solid var(--sage-light);}
-  .seat.you{border-left-color:var(--amber);background:#fbf6ec;}
-  .seat.locked{border-left-color:var(--sage-dark);}
-  .seat.team{border-left-color:var(--green);}
+  .seat.you{border-left-color:#c06a35;background:#f9efe6;}
+  .seat.locked{border-left-color:#9a938a;background:#f3f1ec;}
+  .seat.team{border-left-color:#5e7d63;background:#eef3ec;}
   .seat.dragging{opacity:.4;}
   .seat.dragover{box-shadow:0 0 0 2px var(--sage-mid);}
   .handle{cursor:grab;color:var(--sage-light);font-size:15px;line-height:1;user-select:none;margin-right:4px;}
@@ -39,9 +40,9 @@
   .seat .sn{font-size:14px;font-weight:600;outline:none;padding:2px 4px;border-radius:5px;flex:1;}
   .seat .sn:focus{background:var(--light-cream);}
   .badge{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;padding:3px 9px;border-radius:20px;white-space:nowrap;cursor:pointer;border:none;font-family:inherit;}
-  .badge.you{background:var(--amber-bg);color:var(--amber);}
-  .badge.locked{background:var(--sage-dark);color:var(--nearwhite);}
-  .badge.team{background:var(--green-bg);color:var(--green);}
+  .badge.you{background:#f3ddca;color:#8a4a1e;}
+  .badge.locked{background:#e6e2d9;color:#5f5a51;}
+  .badge.team{background:#dfead9;color:#3d6b3d;}
   .seat .owner{font-size:12.5px;color:var(--slate);margin-top:5px;}
   .seat .owner b,.seat .owner .target{outline:none;padding:1px 3px;border-radius:4px;}
   .seat .owner b{color:var(--charcoal);font-weight:600;}
@@ -80,8 +81,8 @@
   <button class="addseat" data-add="bff">+ Add seat</button>
 
   <div class="legend">
-    <b>Tap the tag to cycle it:</b> On you (amber) → Your seat, yours for good (dark) → Delegated (green).<br>
-    The number that matters is <b>seats still on you</b> — every one you hand off drops it.
+    <b>Tap the tag to cycle it:</b> <span style="color:#c06a35;font-weight:600">On you (orange)</span> — your to-do → <span style="color:#5f5a51;font-weight:600">Your seat (grey)</span> — yours on purpose → <span style="color:#3d6b3d;font-weight:600">Delegated (green)</span> — off your plate.<br>
+    The goal: move seats from orange to green. Watch <b>Off your plate</b> climb and <b>Seats still on you</b> drop.
   </div>
 </div>
 
@@ -138,9 +139,9 @@ function render(){
   const toOffload=state.seats.filter(s=>s.status==='you').length;
   const offPlate=state.seats.filter(s=>s.status==='team').length;
   document.getElementById('metrics').innerHTML=`
-    <div class="metric warn"><div class="l">Seats still on you</div><div class="v">${stillOnYou} / ${state.seats.length}</div></div>
-    <div class="metric"><div class="l">Flagged to offload</div><div class="v">${toOffload}</div></div>
-    <div class="metric"><div class="l">Off your plate</div><div class="v">${offPlate}</div></div>`;
+    <div class="metric orange"><div class="l">Seats still on you</div><div class="v">${stillOnYou} / ${state.seats.length}</div></div>
+    <div class="metric orange"><div class="l">Flagged to offload</div><div class="v">${toOffload}</div></div>
+    <div class="metric green"><div class="l">Off your plate</div><div class="v">${offPlate}</div></div>`;
   wire();
 }
 
